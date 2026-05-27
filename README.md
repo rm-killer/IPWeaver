@@ -1,6 +1,6 @@
 # **⚡ IPWeaver**
 
-[**🇮🇷 برای مشاهده توضیحات به زبان فارسی کلیک کنید (Persian Version)**](http://docs.google.com/README-fa.md)
+[**🇮🇷 برای مشاهده توضیحات به زبان فارسی کلیک کنید (Persian Version)**](https://github.com/rm-killer/IPWeaver/blob/main/README-fa.md)
 
 **IPWeaver** is a high-performance, local network utility designed to automate IP discovery and multiplex proxy configurations for V2Ray. It bridges local ICMP concurrent pings with bulk URL parsing to generate optimized node configurations instantly.
 
