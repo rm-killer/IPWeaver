@@ -1,6 +1,6 @@
 # **⚡ IPWeaver**
 
-[**🇺🇸 Click here for the English Version**](http://docs.google.com/README.md)
+[**🇺🇸 Click here for the English Version**](https://github.com/rm-killer/IPWeaver)
 
 برنامه **IPWeaver** یک ابزار شبکه محلی و سریع است که برای خودکارسازی کشف آی‌پی‌های سالم و ترکیب آن‌ها با کانفیگ‌های پروکسی (V2Ray) طراحی شده است. این برنامه پینگ‌های همزمان ICMP را با پردازش گروهی لینک‌های کانفیگ ترکیب می‌کند تا بهترین کانفیگ‌ها را در چند ثانیه برای شما تولید کند.
 
@@ -18,7 +18,7 @@
 
 ما فایل آماده .exe را برای شما قرار داده‌ایم تا نیازی به نصب پایتون یا کامپایل کردن کدها نداشته باشید\!
 
-۱. به بخش [**Releases**](http://docs.google.com/releases) در گیت‌هاب بروید.
+۱. به بخش [**Releases**](https://github.com/rm-killer/IPWeaver/releases) در گیت‌هاب بروید.
 
 ۲. جدیدترین نسخه فایل IPWeaver.exe را دانلود کنید.
 
@@ -29,18 +29,18 @@
 اگر ترجیح می‌دهید کد پایتون را مستقیماً اجرا کنید:
 
 ۱. سورس پروژه را دانلود کنید:
-
+```bash
 git clone https://github.com/rm-killer/IPWeaver.git  
 cd IPWeaver
-
+```
 ۲. پیش‌نیازهای پایتون را نصب کنید:
-
+```bash
 pip install fastapi uvicorn ping3 pywebview
-
+```
 ۳. برنامه را اجرا کنید:
-
+```bash
 python main.py
-
+```
 *رابط کاربری به صورت خودکار در مرورگر پیش‌فرض شما باز خواهد شد.*
 
 ## **💖 حمایت مالی از پروژه**
