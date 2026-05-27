@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Weaver for V2Ray | rmkiller</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        macGray: '#e5e7eb',
+                        macDark: '#0f172a',
+                        appWhite: '#ffffff',
+                        appDark: '#1e293b',
+                        appDarker: '#0f172a',
+                        primaryBlue: '#3b82f6',
+                        slateBtn: '#2a3644',
+                        slateBtnHover: '#1f2833'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+        
+        // Initialize Theme & Layout before body loads
+        const initTheme = () => {
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        };
+        initTheme();
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.theme && localStorage.layout !== 'classic') {
+                e.matches ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark');
+            }
+        });
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .pill-btn {
+            @apply px-3 py-1 text-xs font-semibold rounded-full border transition-all duration-200 flex items-center justify-center;
+        }
+        .pill-blue { @apply border-blue-200 text-blue-500 hover:bg-blue-50 dark:border-blue-500/30 dark:text-blue-400 dark:hover:bg-blue-500/10; }
+        .pill-red { @apply border-red-200 text-red-500 hover:bg-red-50 dark:border-red-500/30 dark:text-red-400 dark:hover:bg-red-500/10; }
+        .pill-green { @apply border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-500/30 dark:text-emerald-400 dark:hover:bg-emerald-500/10; }
+
+        /* =========================================
+           CLASSIC UI OVERRIDES (Dual-Layout Engine)
+           ========================================= */
+        body.layout-classic .classic-flex-only { display: flex !important; }
+        body.layout-classic .classic-block-only { display: block !important; }
+        body.layout-classic .modern-only { display: none !important; }
+        body:not(.layout-classic) .classic-flex-only, 
+        body:not(.layout-classic) .classic-block-only { display: none !important; }
+
+        body.layout-classic { background-color: #0d1117 !important; color: #c9d1d9 !important; align-items: flex-start !important; }
+        
+        /* App Wrapper */
+        body.layout-classic #app-wrapper { max-width: 72rem !important; background: transparent !important; border: none !important; box-shadow: none !important; max-height: none !important; margin-top: 2rem !important; }
+        body.layout-classic #scroll-area { padding: 0 !important; overflow: visible !important; }
+        
+        /* Header */
+        body.layout-classic #header-container { border-bottom: 1px solid #30363d !important; padding-bottom: 1.5rem !important; }
+        
+        /* Two-Column Grid */
+        body.layout-classic #panels-container { 
+            background: transparent !important; border: none !important; padding: 0 !important; box-shadow: none !important; 
+            display: grid !important; grid-template-columns: repeat(1, minmax(0, 1fr)) !important; gap: 1.5rem !important; 
+        }
+        @media (min-width: 1024px) { body.layout-classic #panels-container { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+        
+        /* Dark Panel Cards */
+        body.layout-classic .panel-card { background-color: #161b22 !important; border: 1px solid #30363d !important; padding: 1.25rem !important; border-radius: 0.75rem !important; display: flex !important; flex-direction: column !important; gap: 1rem !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important; }
+        
+        /* Inputs & Textareas */
+        body.layout-classic textarea, body.layout-classic input { background-color: #0d1117 !important; border: 1px solid #30363d !important; color: #c9d1d9 !important; }
+        body.layout-classic textarea:focus, body.layout-classic input:focus { border-color: #f97316 !important; ring: 0 !important; }
+        body.layout-classic .settings-box { background-color: transparent !important; border: 1px solid #30363d !important; }
+        
+        /* Tables */
+        body.layout-classic #resultsContainer { background-color: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin-top: 0 !important; }
+        body.layout-classic table th { background-color: #0d1117 !important; color: #8b949e !important; border-bottom: 1px solid #30363d !important; }
+        body.layout-classic table td { border-bottom: 1px solid #30363d !important; color: #c9d1d9 !important;}
+        body.layout-classic tr { border-color: #30363d !important; }
+        body.layout-classic tr:hover { background-color: #1f242c !important; }
+        
+        /* Footer */
+        body.layout-classic #footer-container { background: transparent !important; border-top: 1px solid #30363d !important; padding-left: 0 !important; padding-right: 0 !important; margin-top: 2rem !important; }
+    </style>
+</head>
+<body class="p-4 md:p-8 font-sans bg-[#e2e8f0] text-gray-800 dark:bg-macDark dark:text-gray-200 min-h-screen flex items-center justify-center transition-colors duration-300">
+    
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-3 rounded-full text-white font-medium text-sm opacity-0 transition-opacity duration-300 pointer-events-none z-50 shadow-xl backdrop-blur-md border border-white/10"></div>
+
+    <!-- Main Window Wrapper -->
+    <div id="app-wrapper" class="w-full max-w-4xl bg-white dark:bg-appDark rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700 flex flex-col my-8 max-h-[90vh] transition-all duration-500">
+        
+        <div id="scroll-area" class="p-6 md:p-10 overflow-y-auto flex-grow flex flex-col">
+            
+            <div id="header-container" class="mb-8 pb-6 border-b border-gray-100 dark:border-gray-800 flex flex-col gap-5">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                    <div>
+                        <!-- Modern Title -->
+                        <h1 class="modern-only text-3xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-tight flex items-start gap-1">
+                            IP Weaver for V2Ray
+                            <sup class="text-[10px] font-bold text-gray-500 dark:text-gray-400 normal-case tracking-wider mt-2.5">by rmkiller</sup>
+                        </h1>
+                        <!-- Classic Title -->
+                        <h1 class="classic-flex-only text-3xl font-bold text-orange-500 tracking-tight items-start gap-2">
+                            <svg class="w-8 h-8 text-orange-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span class="flex items-start gap-1">
+                                IP Weaver for V2Ray
+                                <sup class="text-[10px] font-bold text-gray-400 normal-case tracking-wider mt-2.5 uppercase">by rmkiller</sup>
+                            </span>
+                        </h1>
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">Multi-threaded ping engine & bulk config generator</p>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs font-bold text-primaryBlue bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 px-3 py-1.5 rounded-md shadow-sm">V1.0.0</span>
+                    </div>
+                </div>
+
+                <!-- GitHub Links / Action Bar -->
+                <div class="flex items-center gap-3 flex-wrap">
+                    <a href="https://github.com/rm-killer" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg transition-colors border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        @rm-killer
+                    </a>
+                    <a href="https://github.com/rm-killer/IPWeaver" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/10 dark:hover:bg-amber-900/30 text-amber-700 dark:text-amber-500 rounded-lg transition-colors border border-amber-200 dark:border-amber-700/50 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path></svg>
+                        Star App
+                    </a>
+                    <a href="https://github.com/rm-killer/IPWeaver/issues" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg transition-colors border border-red-200 dark:border-red-800/50 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.618 5.984A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016zM12 9v2m0 4h.01"></path></svg>
+                        Report Bug
+                    </a>
+                    <a href="https://github.com/rm-killer/IPWeaver" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/10 dark:hover:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-lg transition-colors border border-pink-200 dark:border-pink-800/50 shadow-sm">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        Donate ( حمایت مالی از پروژه )
+                    </a>
+                    
+                    <div class="flex gap-2 ml-auto">
+                        <!-- UI Toggle Button -->
+                        <button onclick="toggleLayout()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-appDark" title="Toggle Layout Style">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                        </button>
+                        <!-- Dark Mode Toggle -->
+                        <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-appDark" aria-label="Toggle Dark Mode">
+                            <svg id="theme-icon-sun" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            <svg id="theme-icon-moon" class="w-4 h-4 block dark:hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="panels-container" class="bg-white dark:bg-[#151e2b] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-8 transition-colors">
+                
+                <div class="border-b border-gray-100 dark:border-gray-800 pb-4 modern-only">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-100">Configuration</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select your scanned IPs, set domains, and generate.</p>
+                </div>
+
+                <!-- LEFT PANEL: IP Addresses -->
+                <div class="panel-card flex flex-col gap-4">
+                    
+                    <!-- Classic Header Badge -->
+                    <div class="classic-flex-only items-center mb-2">
+                        <span class="bg-orange-500 text-white px-2.5 py-1 rounded-md text-xs font-bold mr-2">1</span>
+                        <span class="text-white font-bold text-lg">Multi-IP Scan</span>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2 modern-only">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">IP Addresses</label>
+                            <div class="flex gap-2">
+                                <button onclick="document.getElementById('ipInput').value=''" class="pill-btn pill-red">Clear</button>
+                                <button onclick="pasteToInput('ipInput')" class="pill-btn pill-blue">Paste</button>
+                            </div>
+                        </div>
+                        
+                        <textarea id="ipInput" class="w-full p-4 bg-gray-50 dark:bg-appDarker border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-all duration-500 h-[420px]" placeholder="Paste IP addresses here (One per line)...&#10;1.1.1.1&#10;8.8.8.8"></textarea>
+                        
+                        <!-- Modern Scan Button -->
+                        <div class="mt-3 flex justify-between items-center modern-only">
+                            <button onclick="startBulkPing()" class="px-5 py-2 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-bold text-sm rounded-lg border border-blue-200 dark:border-blue-500/30 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Scan IPs
+                            </button>
+                        </div>
+
+                        <!-- Classic Scan Button -->
+                        <div class="mt-4 classic-block-only">
+                            <button onclick="startBulkPing()" class="w-full flex justify-center items-center gap-2 bg-gradient-to-b from-orange-400 to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.3)] transform hover:-translate-y-0.5 border-t border-orange-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                                Start Mass Scan
+                            </button>
+                        </div>
+
+                        <!-- Scan Results Table -->
+                        <div id="resultsContainer" class="hidden opacity-0 translate-y-4 transition-all duration-500 ease-out mt-4 bg-white dark:bg-appDark border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 classic-hide">Scanned Results</h3>
+                                <button onclick="selectAllOnline()" class="pill-btn pill-green text-[10px] modern-only">Select All Online</button>
+                                <button onclick="selectAllOnline()" class="text-xs text-orange-500 hover:text-orange-400 transition-colors classic-block-only">Select All Online</button>
+                            </div>
+                            
+                            <div class="overflow-y-auto max-h-[220px] rounded-lg border border-gray-100 dark:border-gray-800">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-50 dark:bg-[#1a2333] text-gray-500 dark:text-gray-400 sticky top-0 z-10 text-xs uppercase tracking-wider font-semibold">
+                                        <tr>
+                                            <th class="p-3 w-12 text-center">Use</th>
+                                            <th class="p-3">IP Target</th>
+                                            <th class="p-3">Status</th>
+                                            <th class="p-3 text-right">Latency</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pingTableBody">
+                                        <tr><td colspan="4" class="p-6 text-center text-gray-500 italic text-xs">Awaiting scan...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: V2Ray Configs -->
+                <div class="panel-card flex flex-col gap-4">
+                    
+                    <!-- Classic Header Badge -->
+                    <div class="classic-flex-only items-center mb-2">
+                        <span class="bg-emerald-500 text-white px-2.5 py-1 rounded-md text-xs font-bold mr-2">2</span>
+                        <span class="text-white font-bold text-lg">Config Generation</span>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-2 modern-only">
+                            <label class="text-sm font-bold text-gray-700 dark:text-gray-300">V2Ray Configurations</label>
+                            <div class="flex gap-2">
+                                <button onclick="document.getElementById('configInput').value=''" class="pill-btn pill-red">Clear</button>
+                                <button onclick="pasteToInput('configInput')" class="pill-btn pill-blue">Paste</button>
+                            </div>
+                        </div>
+                        
+                        <textarea id="configInput" rows="5" class="w-full p-4 bg-gray-50 dark:bg-appDarker border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 resize-none transition-colors" placeholder="Paste your vmess://, vless://, or trojan:// configs here (One per line)..."></textarea>
+                    </div>
+
+                    <!-- Port Settings -->
+                    <div class="settings-box bg-blue-50/50 dark:bg-[#1a2333]/50 p-4 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <div class="modern-only w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-500 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-300">Bulk Rewrite Port</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Optional: Overwrite the port.</p>
+                            </div>
+                        </div>
+                        <input type="number" id="portInput" class="w-32 p-2 bg-white dark:bg-appDarker border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-center text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500" placeholder="e.g., 443">
+                    </div>
+
+                    <!-- Generate Actions (Modern & Classic) -->
+                    <button onclick="generateConfigs()" class="modern-only w-full bg-slateBtn hover:bg-slateBtnHover dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold py-4 rounded-xl transition-all duration-300 shadow-md transform hover:-translate-y-0.5 text-lg">
+                        Convert & Generate Configs
+                    </button>
+
+                    <button onclick="generateConfigs()" class="classic-flex-only w-full justify-center items-center gap-2 bg-gradient-to-b from-emerald-400 to-emerald-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 shadow-[0_4px_14px_0_rgba(16,185,129,0.39)] hover:shadow-[0_6px_20px_rgba(16,185,129,0.3)] transform hover:-translate-y-0.5 border-t border-emerald-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        Convert & Generate Configs
+                    </button>
+
+                    <!-- Output Section -->
+                    <div id="outputSection" class="hidden opacity-0 transition-opacity duration-500 mt-2 flex-grow flex flex-col gap-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-sm font-bold text-emerald-600 dark:text-emerald-400" id="outputCounter">Generated Output (0)</label>
+                            <button onclick="copyOutput()" class="pill-btn pill-green modern-only">Copy All</button>
+                            <button onclick="copyOutput()" class="text-xs px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded border border-emerald-500/30 transition-colors classic-block-only">Copy to Clipboard</button>
+                        </div>
+                        <textarea id="configOutput" readonly class="w-full min-h-[120px] h-full p-4 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/50 rounded-xl text-sm text-emerald-700 dark:text-emerald-400 font-mono focus:outline-none resize-none" placeholder="Results will appear here..."></textarea>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="footer-container" class="bg-gray-50 dark:bg-appDarker border-t border-gray-200 dark:border-gray-800 p-6 md:p-8 flex flex-col md:flex-row justify-between gap-6">
+            <div class="max-w-md">
+                <h4 class="text-sm font-bold text-gray-800 dark:text-gray-200 mb-2 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    About IP Weaver
+                </h4>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    A high-performance, local network utility designed to automate IP discovery and multiplex proxy configurations. It bridges local ICMP concurrent pings with bulk URL parsing to generate optimized node configurations instantly.
+                </p>
+            </div>
+            <div class="flex flex-col md:items-end justify-center text-gray-500 dark:text-gray-400 text-xs gap-1.5">
+                <span class="px-2.5 py-1 bg-gray-200 dark:bg-gray-800 rounded font-mono text-[10px] tracking-widest text-gray-600 dark:text-gray-300 mb-1">App Version 1.0.0</span>
+                <p class="font-medium">&copy; 2026 rmkiller. All rights reserved.</p>
+                <p>IP Weaver for V2Ray &middot; Open Source Initiative</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scannedIps = [];
+
+        // Layout Toggle Logic
+        function toggleLayout() {
+            const isClassic = document.body.classList.toggle('layout-classic');
+            localStorage.layout = isClassic ? 'classic' : 'modern';
+            
+            if (isClassic) {
+                document.documentElement.classList.add('dark');
+            } else {
+                initTheme(); // Revert to user's standard theme pref
+            }
+        }
+
+        // Apply saved layout on load
+        if (localStorage.layout === 'classic') {
+            document.body.classList.add('layout-classic');
+            document.documentElement.classList.add('dark');
+        }
+
+        // Theme Toggle Logic
+        function toggleTheme() {
+            if (document.body.classList.contains('layout-classic')) {
+                showToast("Theme is locked to Dark Mode in Classic Layout.", "info");
+                return;
+            }
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            
+            if (type === 'error') {
+                toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-2.5 rounded-full text-white font-medium text-sm opacity-100 transition-opacity duration-300 z-50 bg-red-500 shadow-lg shadow-red-500/20';
+            } else if (type === 'success') {
+                toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-2.5 rounded-full text-white font-medium text-sm opacity-100 transition-opacity duration-300 z-50 bg-emerald-500 shadow-lg shadow-emerald-500/20';
+            } else {
+                toast.className = 'fixed top-5 left-1/2 transform -translate-x-1/2 px-6 py-2.5 rounded-full text-white font-medium text-sm opacity-100 transition-opacity duration-300 z-50 bg-gray-800 shadow-lg shadow-black/20';
+            }
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        async function pasteToInput(id) {
+            try {
+                const text = await navigator.clipboard.readText();
+                const el = document.getElementById(id);
+                el.value = el.value ? el.value + '\n' + text : text;
+                showToast("Pasted from clipboard", "success");
+            } catch (err) {
+                showToast("Clipboard permission denied", "error");
+            }
+        }
+
+        async function startBulkPing() {
+            const text = document.getElementById('ipInput').value;
+            const ips = text.split('\n').map(ip => ip.trim()).filter(ip => ip.length > 0);
+            
+            if(ips.length === 0) {
+                showToast("Please enter at least one IP Address.", "error");
+                return;
+            }
+
+            // Animate layout change: Shrink textbox smoothly
+            const ipInput = document.getElementById('ipInput');
+            if (ipInput.classList.contains('h-[420px]')) {
+                ipInput.classList.replace('h-[420px]', 'h-[140px]');
+            }
+
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.classList.remove('hidden');
+            setTimeout(() => {
+                resultsContainer.classList.remove('opacity-0', 'translate-y-4');
+                resultsContainer.classList.add('opacity-100', 'translate-y-0');
+            }, 10);
+
+            const tbody = document.getElementById('pingTableBody');
+            tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-orange-500 font-medium text-xs"><div class="flex justify-center items-center gap-2"><svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Pinging ${ips.length} endpoints...</div></td></tr>`;
+
+            try {
+                const response = await fetch('/api/ping', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ips })
+                });
+                
+                if (!response.ok) throw new Error("Server error");
+                
+                scannedIps = await response.json();
+                renderTable();
+                showToast("Ping scan completed successfully!", "success");
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-red-500 text-xs font-medium">Error connecting to local server. Make sure main.py is running.</td></tr>`;
+                showToast("Connection to backend failed.", "error");
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('pingTableBody');
+            tbody.innerHTML = '';
+            
+            scannedIps.forEach((item, index) => {
+                const isOnline = item.status === 'online';
+                const row = document.createElement('tr');
+                row.className = "border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors";
+                
+                let statusHtml = '';
+                if (isOnline) {
+                    statusHtml = '<span class="text-emerald-500 font-medium flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div> Online</span>';
+                } else {
+                    statusHtml = '<span class="text-red-500 font-medium flex items-center gap-1.5"><div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Offline</span>';
+                }
+
+                row.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input type="checkbox" data-ip="${item.ip}" ${isOnline ? 'checked' : ''} class="ip-checkbox w-3.5 h-3.5 rounded border-gray-300 dark:border-gray-600 bg-white dark:bg-appDarker text-orange-500 focus:ring-orange-500 cursor-pointer">
+                    </td>
+                    <td class="p-3 font-mono text-gray-700 dark:text-gray-300">${item.ip}</td>
+                    <td class="p-3">${statusHtml}</td>
+                    <td class="p-3 text-right font-mono ${isOnline ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 dark:text-gray-600'}">${isOnline ? item.latency + ' ms' : '-'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function selectAllOnline() {
+            let count = 0;
+            document.querySelectorAll('.ip-checkbox').forEach(cb => {
+                const row = cb.closest('tr');
+                if (row.innerHTML.includes('Online')) {
+                    cb.checked = true;
+                    count++;
+                }
+            });
+            showToast(`Selected ${count} online IPs.`);
+        }
+
+        async function generateConfigs() {
+            const configs = document.getElementById('configInput').value.split('\n').filter(c => c.trim());
+            const checkedBoxes = document.querySelectorAll('.ip-checkbox:checked');
+            const selected_ips = Array.from(checkedBoxes).map(cb => cb.getAttribute('data-ip'));
+            const portVal = document.getElementById('portInput').value;
+
+            if(configs.length === 0) {
+                showToast("Please paste at least one V2Ray config.", "error");
+                return;
+            }
+            if(selected_ips.length === 0) {
+                showToast("Please select at least one working IP from the table.", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/process-configs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        configs,
+                        selected_ips,
+                        new_port: portVal ? parseInt(portVal) : null
+                    })
+                });
+                
+                if (!response.ok) throw new Error("Processing failed");
+
+                const res = await response.json();
+                
+                const outSection = document.getElementById('outputSection');
+                outSection.classList.remove('hidden');
+                setTimeout(() => outSection.classList.add('opacity-100'), 10);
+
+                document.getElementById('configOutput').value = res.configs.join('\n');
+                document.getElementById('outputCounter').innerText = `Output Configs (${res.generated_count}):`;
+                
+                showToast(`Successfully generated ${res.generated_count} configurations!`, "success");
+            } catch(err) {
+                showToast("Error processing configuration strings.", "error");
+            }
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('configOutput');
+            if (!output.value) {
+                showToast("Nothing to copy yet.", "error");
+                return;
+            }
+            output.select();
+            document.execCommand('copy');
+            showToast("Copied all configurations to clipboard!", "success");
+        }
+    </script>
+</body>
+</html>

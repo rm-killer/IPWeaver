@@ -1,0 +1,20 @@
+Build artifacts folder (the one you created)
+
+bin/
+build_artifacts/
+
+PyInstaller generated files
+
+build/
+dist/
+*.spec
+
+Python cache
+
+pycache/
+*.pyc
+
+OS generated files
+
+.DS_Store
+Thumbs.db
