@@ -27,15 +27,18 @@ We provide a pre-compiled .exe file so you don't need to install Python or compi
 If you prefer to run the raw Python script:
 
 1. Clone this repository:  
+```bash
    git clone https://github.com/rm-killer/IPWeaver.git  
    cd IPWeaver
-
+```
 2. Install the required Python dependencies:  
+```bash
    pip install fastapi uvicorn ping3 pywebview
-
+```
 3. Run the application:  
+```bash
    python main.py
-
+```
    *The application will automatically open in your default web browser.*
 
 ## **💖 Support the Project**
