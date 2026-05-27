@@ -18,7 +18,7 @@
 
 We provide a pre-compiled .exe file so you don't need to install Python or compile anything yourself\!
 
-1. Go to the [**Releases**](http://docs.google.com/releases) tab on GitHub.  
+1. Go to the [**Releases**]([http://docs.google.com/releases](https://github.com/rm-killer/IPWeaver/releases)) tab on GitHub.  
 2. Download the latest IPWeaver.exe.  
 3. Double-click the file to launch the native desktop application. No installation required\!
 
